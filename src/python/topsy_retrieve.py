@@ -7,7 +7,6 @@ import time
 import logging
 import requests
 from bs4 import BeautifulSoup
-import urllib2
 
 global key 
 key = "09C43A9B270A470B8EB8F2946A9369F3"
@@ -20,7 +19,7 @@ def get_img_link(url):
     """Gets the actual non-redirect link for the image
     """
 
-    soup = BeautifulSoup(urllib2.urlopen(url).read())
+    soup = BeautifulSoup(requests.get(url).text)
 
     urls = []
     img_list = soup.findAll('meta', {"property":'og:image'})
@@ -38,6 +37,9 @@ def get_img_link(url):
         return None
 
 def get_img(tweet_dict):
+    """Obtain folder path to save the retrieved image.
+        Call retrieval helper function to pull image.
+    """
     permalink = tweet_dict['url']
     arr = permalink.strip().split('/')
     user = arr[3]
@@ -47,6 +49,8 @@ def get_img(tweet_dict):
         _get_img(img_link, user + '_' + num)
 
 def _get_img(url, dir_path):
+    """Helper function for actual pulling image from url
+    """
     base_path = '../../resource/topsy/'
     dir_path = base_path + dir_path
     if not os.path.exists(dir_path):
@@ -63,21 +67,26 @@ def remove_retweet(tweets):
     tweets = [t for t in tweets if t['title'].replace('"','')[:2] != 'RT']
 
 def output_tweets(filename, tweets):
+    """Output tweets related information into tab-delimited file
+        Information include the permalink of tweet, title, and the image link if applicable
+    """
     fh = open(filename, 'w')    
     for tweet in tweets:
         try:
-            output = '\t'.join([tweet['url'],tweet['title'],tweet['content'],tweet['img_link']])
+            output = '\t'.join([tweet['url'],tweet['title'],tweet['img_link']])
             fh.write(output + '\n')
         except Exception:
             fh.close()
 
 def main(argv):
+    """Main. Retrieves tweets using the Topsy Otter API.
+    """
     global t0
     global end
 
     output = []
-    logging.basicConfig(filename='topsy.log', level=logging.INFO)
-    output_filename = 'topsy_output.txt'
+    logging.basicConfig(filename=argv[3], level=logging.INFO)
+    output_filename = argv[2]
 
     q = argv[1]
     tweets = []
@@ -133,6 +142,8 @@ def main(argv):
 
 
 def get_tweets(q, t0, interval):
+    """Retrieves tweets in JSON format
+    """
     global key
     page = 1
     t1 = t0 + interval

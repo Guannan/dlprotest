@@ -1,42 +1,43 @@
 #!/usr/bin/env python
 
-import sys
+import os
+import sys, traceback
 import urllib2
+import requests
 import simplejson as json
 import numpy as np
 import logging
 import time
 
-# class ErrorLog:
-# 	def __init__(self, filename):
-# 		self.filename = filename
-# 		self.output = []
+def get_img(url, search_term):
+    dir_path = '../../resource/google/' + search_term + '/'
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
 
-# 	def _add_illegal(self, url):
-# 		self.output.append(url)
-
-# 	def _log(self):
-# 		err_log = open(self.filename, 'w')
-# 		for url in self.output:
-# 			err_log.write(url + '\n')
-# 		err_log.close()
-
+    file_path = dir_path + '/' + url.split('/')[-1]
+    fh = open(file_path,'wb')
+    try:
+    	fh.write(requests.get(url).content)
+    except Exception:
+    	traceback.print_exc(file=sys.stdout)
+    	logging.debug('Illegal URL at : ' + url)
+    fh.close()
 
 def main(argv):
 	fetcher = urllib2.build_opener()
-	searchTerm = argv[1]
+	search_term = argv[1]
 
-	logger_filename = 'resource/protest_images/google/run.log'
+	logger_filename = '../../resource/google/run.log'
 	logging.basicConfig(filename=logger_filename, level=logging.DEBUG)
 	img_count = 0
 
 	start_time = time.time()
 	all_urls = []  # used to check image redundancy
 	all_filenames = []  # used to order images with the same name
-	# for startIndex in pageIndex:
+
 	startIndex = 0
-	while img_count < 10:
-		searchUrl = 'http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=' + searchTerm + '&start=' + str(startIndex)
+	while img_count < 64:  # google only allows 64 images per search term
+		searchUrl = 'http://ajax.googleapis.com/ajax/services/search/images?v=1.0&q=' + search_term + '&start=' + str(startIndex)
 		f = fetcher.open(searchUrl)
 		deserialized_output = json.load(f)
 
@@ -50,7 +51,9 @@ def main(argv):
 			imageUrl = result['unescapedUrl']
 			if imageUrl in all_urls:
 				continue
-			base = 'resource/protest_images/google/' + searchTerm + '/'
+			base = 'resource/google/' + search_term + '/'
+			if imageUrl.strip().split('/')[-1] == '':
+				continue
 			filename = base + imageUrl.strip().split('/')[-1]
 			count = 2
 			if filename in all_filenames:
@@ -62,28 +65,16 @@ def main(argv):
 						filename = new_name
 
 			all_filenames.append(filename)
-			fh = open(filename, 'w')
-			try:
-				raw_image = urllib2.urlopen(imageUrl).read()
-			except Exception:
-				# logger._add_illegal(imageUrl)
-				logging.debug('Illegal URL at : ' + imageUrl)
-				pass
-			fh.write(raw_image)
-			fh.close()
+			get_img(imageUrl, search_term)
 			all_urls.append(imageUrl)
 			img_count += 1
 			print 'Current image count : ', img_count
 
-		time.sleep(5)
+		time.sleep(3)
 		startIndex += 1
 
-	# logger._log()
-	# all_urls_log = open('resource/protest_images/google/all_urls.txt', 'w')
 	for url in all_urls:
 		logging.info('Retrieved URL : ' + url)
-	# 	all_urls_log.write(url + '\n')
-	# all_urls_log.close()
 	print ('Execution time : %s seconds' % (time.time() - start_time))
 
 if __name__ == '__main__':
