@@ -55,7 +55,9 @@ def get_img(tweet_dict):
 def _get_img(url, dir_path):
     """Helper function for actual pulling image from url
     """
-    base_path = '../../resource/topsy/'
+    global query
+
+    base_path = '../../resource/topsy/' + query + '/'
     dir_path = base_path + dir_path
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
