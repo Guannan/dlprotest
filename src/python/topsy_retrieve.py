@@ -6,14 +6,18 @@ import json
 import time
 import logging
 import requests
+import argparse
+import traceback
 from bs4 import BeautifulSoup
 
 global key 
 key = "09C43A9B270A470B8EB8F2946A9369F3"
 global t0
-t0  = 1407715200           # 11 Aug 2014 00:00:00 GMT
+# t0  = 1407715200           # 11 Aug 2014 00:00:00 GMT
 global end
-end = t0 + (60 * 60 * 24 * 30 * 12) # 12 months after
+# end = t0 + (60 * 60 * 24 * 30 * 12) # 12 months after
+global interval
+global query
 
 def get_img_link(url):
     """Gets the actual non-redirect link for the image
@@ -83,18 +87,22 @@ def main(argv):
     """
     global t0
     global end
+    global interval
+    global query
 
     output = []
-    logging.basicConfig(filename=argv[3], level=logging.INFO)
-    output_filename = argv[2]
+    # logging.basicConfig(filename=argv[3], level=logging.INFO)
+    logging.basicConfig(filename='debug.log', level=logging.INFO)    
+    output_filename = 'topsy_output.txt'
 
-    q = argv[1]
+    q = query.strip().split('+')
+    q = ' '.join(q)
     tweets = []
     tweet_count = 0
     try:
-        while t0 < end and tweet_count < 5:
+        while t0 < end and tweet_count < 200:
             tweets = []
-            results, t0, t1 = get_tweets(q, t0, 60 * 60 * 24 * 7)   # interval of 7 days
+            results, t0, t1 = get_tweets(q, t0, interval)   # interval in seconds
             for tweet in results:
                 # t = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(tweet['firstpost_date']))
 
@@ -137,6 +145,7 @@ def main(argv):
             output_tweets(output_filename, tweets)
 
     except requests.exceptions.ConnectionError:
+        print(traceback.format_exc())
         sys.exit(1)
 
 
@@ -168,6 +177,22 @@ def get_tweets(q, t0, interval):
     return all_tweets, t0, t1
 
 if __name__ == "__main__":
+    global t0
+    global end
+    global interval
+    global query
+
+    parser = argparse.ArgumentParser(description = 'Topsy tweet retrieval')
+    parser.add_argument('--query', metavar='query', type=str, help='Query term for Topsy')
+    parser.add_argument('--start_time', metavar='int', type=int, help='Starting time for collected tweets: need converted number')
+    parser.add_argument('--end_time', metavar='int', type=int, help='Ending time for collected tweets: need converted number')
+    parser.add_argument('--interval', metavar='int', type=int, help='Interval for collected tweets: need number here in seconds')
+    args = parser.parse_args()
+
+    query = args.query
+    t0 = args.start_time
+    end = args.end_time
+    interval = args.interval
     main(sys.argv)
 
 
