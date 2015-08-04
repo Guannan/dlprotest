@@ -174,3 +174,15 @@ python topsy_retrieve.py --query occupy+movement --start_time 1322780443 --end_t
 # # - 4 days
 # python topsy_retrieve.py --query burundian+protest --start_time 1427929243 --end_time 1438387209 --interval 345600
 
+# protest
+# December 1, 2011 (1322780443 - 1438387209)
+# - monthly
+python topsy_retrieve.py --query protest --start_time 1322780443 --end_time 1438387209 --interval 604800
+
+# violent protest
+# December 1, 2011 (1322780443 - 1438387209)
+# - monthly
+python topsy_retrieve.py --query violent+protest --start_time 1322780443 --end_time 1438387209 --interval 604800
+
+
+

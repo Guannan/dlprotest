@@ -167,7 +167,7 @@ def get_tweets(q, t0, interval):
     while True:
         all_tweets += results['response']['list']
         page += 1
-        if page < 4 and len(all_tweets) < total_results:
+        if page < 7 and len(all_tweets) < total_results:
             time.sleep(1)
             print 'New Page'
             url = 'http://otter.topsy.com/search.json?q=%s&apikey=%s&perpage=100&mintime=%s&maxtime=%s&page=%s' % (q, key, t0, t1, page)
