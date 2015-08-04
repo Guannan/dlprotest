@@ -102,7 +102,7 @@ def main(argv):
     tweets = []
     tweet_count = 0
     try:
-        while t0 < end and tweet_count < 200:
+        while t0 < end and tweet_count < 10000:
             tweets = []
             results, t0, t1 = get_tweets(q, t0, interval)   # interval in seconds
             for tweet in results:
