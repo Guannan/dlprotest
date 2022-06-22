@@ -2,7 +2,7 @@ funcsigs==0.4
 matplotlib==1.4.3
 mock==1.1.4
 nose==1.3.7
-numpy==1.21.0
+numpy==1.22.0
 pbr==1.3.0
 Pillow>=8.1.1
 pyparsing==2.0.3
